@@ -14,7 +14,6 @@ interface PowerLocationsViewProps {
   onUpgradeWiring: () => void;
   onResetBreaker: () => void;
   onSelectOrUnlockLocation: (locationId: string) => void;
-  onTriggerPrestige: () => void;
 }
 
 export const PowerLocationsView: React.FC<PowerLocationsViewProps> = ({
@@ -23,15 +22,15 @@ export const PowerLocationsView: React.FC<PowerLocationsViewProps> = ({
   onUpgradeWiring,
   onResetBreaker,
   onSelectOrUnlockLocation,
-  onTriggerPrestige,
 }) => {
   const currentLoc = getLocationSpec(state.locationId);
   const wiringCost = calculateWiringUpgradeCostUsd(state);
   const nextMaxKw = Number((currentLoc.baseMaxKw * Math.pow(1.22, state.wiringLevel + 1)).toFixed(2));
   const loadPct = summary.maxKw > 0 ? Math.min(100, (summary.totalKw / summary.maxKw) * 100) : 0;
-
-  const canPrestige = currentLoc.tier >= 3 || state.totalBtcMined >= 0.05;
-  const nextQuantumMult = Number((state.quantumMultiplier + 0.85).toFixed(2));
+  const noisePct =
+    currentLoc.noiseLimitDb > 0
+      ? Math.min(100, (summary.combinedNoiseDb / currentLoc.noiseLimitDb) * 100)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -119,51 +118,58 @@ export const PowerLocationsView: React.FC<PowerLocationsViewProps> = ({
           </div>
         </div>
 
-        {/* Right Side: Prestige / Quantum Network Fork */}
-        <div className="lg:col-span-5 bg-[#1C1C1E] border border-[#BF5AF2]/35 rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+        {/* Right Side: Acoustic Control & Environmental Telemetry */}
+        <div className="lg:col-span-5 bg-[#1C1C1E] border border-white/[0.08] rounded-3xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h2 className="text-base sm:text-lg font-bold text-[#BF5AF2] tracking-tight">
-                Престиж: Квантовый Форк Сети
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                Акустика и Тарифный Режим
               </h2>
-              <span className="text-xs font-bold text-white tabular-nums">
-                ×{state.quantumMultiplier.toFixed(2)} КПД
+              <span
+                className={`text-xs font-bold tabular-nums ${
+                  summary.combinedNoiseDb > currentLoc.noiseLimitDb
+                    ? 'text-[#FF453A]'
+                    : 'text-[#30D158]'
+                }`}
+              >
+                {summary.combinedNoiseDb} / {currentLoc.noiseLimitDb} дБ
               </span>
             </div>
-            <p className="text-xs text-zinc-300 leading-relaxed">
-              Когда сложность сети и халвинги сжимают маржу, проведите хардфорк блокчейна. Ферма перезапускается с Тира 1, но все ваши чипы получают вечный мультипликатор хешрейта <strong className="text-[#BF5AF2]">×{nextQuantumMult}</strong> (сохраняются открытые уровни R&amp;D 1-нм литографии).
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              При превышении санитарного порога шума в жилых и кооперативных зонах начисляются штрафы. Снижайте обороты кулеров или переезжайте в промышленные локации.
             </p>
           </div>
 
-          <div className="bg-[#2C2C2E] rounded-2xl p-3.5 text-xs tabular-nums space-y-1">
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Завершенных форков:</span>
-              <span className="font-bold text-white">{state.prestigeCount}</span>
+          <div className="bg-[#2C2C2E] rounded-2xl p-3.5 text-xs tabular-nums space-y-2">
+            <div className="w-full h-2.5 bg-black rounded-full overflow-hidden">
+              <div
+                style={{ width: `${noisePct}%` }}
+                className={`h-full transition-all ${
+                  summary.combinedNoiseDb > currentLoc.noiseLimitDb
+                    ? 'bg-[#FF453A]'
+                    : 'bg-[#0A84FF]'
+                }`}
+              />
+            </div>
+            <div className="flex justify-between pt-1">
+              <span className="text-zinc-400">Расход на свет (60с):</span>
+              <span className="font-bold text-[#FF453A]">
+                -${summary.usdPowerCostPerMin.toFixed(1)} / мин
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Всего добыто за карьеру:</span>
-              <span className="font-bold text-[#FF9F0A]">{state.totalBtcMined.toFixed(5)} BTC</span>
+              <span className="text-zinc-400">Аренда и хладагенты:</span>
+              <span className="font-bold text-zinc-200">
+                -${summary.usdRentAndMaintPerMin.toFixed(1)} / мин
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Требование для форка:</span>
-              <span className="font-semibold text-zinc-200">Тир 3 (Склад) или 0.05 BTC</span>
+              <span className="text-zinc-400">Коэффициент пыли зала:</span>
+              <span className="font-semibold text-white">
+                ×{currentLoc.dustRateMultiplier.toFixed(2)}
+              </span>
             </div>
           </div>
-
-          <button
-            type="button"
-            disabled={!canPrestige}
-            onClick={onTriggerPrestige}
-            className={`w-full py-3 rounded-2xl text-xs font-bold transition-colors cursor-pointer ${
-              canPrestige
-                ? 'bg-[#BF5AF2] hover:bg-[#BF5AF2]/90 text-white'
-                : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-            }`}
-          >
-            {canPrestige
-              ? `Провести Квантовый Форк (Множитель ×${nextQuantumMult})`
-              : 'Достигните Тира 3 или добудьте 0.05 BTC для Форка'}
-          </button>
         </div>
       </div>
 

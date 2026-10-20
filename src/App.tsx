@@ -849,30 +849,6 @@ export default function App() {
     setMovingFrom(null);
   };
 
-  const handleTriggerPrestige = () => {
-    triggerHaptic('heavy');
-    setState((prev) => {
-      const fresh = createInitialGameState();
-      const nextMult = Number((prev.quantumMultiplier + 0.85).toFixed(2));
-      const keptLitho = prev.rndLevels['asic_1nm_lithography'] || 0;
-
-      return {
-        ...fresh,
-        prestigeCount: prev.prestigeCount + 1,
-        quantumMultiplier: nextMult,
-        totalBtcMined: prev.totalBtcMined,
-        rndLevels: keptLitho > 0 ? { asic_1nm_lithography: keptLitho } : {},
-        alerts: pushAlert(
-          fresh.alerts,
-          'halving',
-          `КВАНТОВЫЙ ФОРК #${prev.prestigeCount + 1} АКТИВИРОВАН`,
-          `Глобальный мультипликатор хешрейта вырос до ×${nextMult}!`
-        ),
-      };
-    });
-    setActiveTab('grid');
-  };
-
   const handleSellBtcFraction = (fraction: number) => {
     const amountBtc = state.btc * fraction;
     if (amountBtc <= 0) return;
@@ -1033,7 +1009,6 @@ export default function App() {
             onUpgradeWiring={handleUpgradeWiring}
             onResetBreaker={handleResetBreaker}
             onSelectOrUnlockLocation={handleSelectOrUnlockLocation}
-            onTriggerPrestige={handleTriggerPrestige}
           />
         )}
 

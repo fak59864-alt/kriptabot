@@ -119,9 +119,9 @@ export const SavePauseModal: React.FC<SavePauseModalProps> = ({
             </div>
           </div>
           <div className="bg-[#2C2C2E] rounded-2xl p-3">
-            <div className="text-[10px] text-zinc-400">Квантовый КПД</div>
-            <div className="text-sm font-bold text-[#BF5AF2] mt-0.5">
-              ×{state.quantumMultiplier.toFixed(2)}
+            <div className="text-[10px] text-zinc-400">Оплачено счетов</div>
+            <div className="text-sm font-bold text-[#30D158] mt-0.5">
+              ${state.totalBillsPaidUsd.toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </div>
           </div>
         </div>
