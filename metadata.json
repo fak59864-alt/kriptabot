@@ -1,0 +1,6 @@
+{
+  "name": "Hashrate Tycoon: От балкона до ГЭС",
+  "description": "Хардкорный экономический симулятор майнинга и энергосетей в эстетике iOS 18 OLED Dark Mode с 2D тепловой картой, кремниевой лотереей, разгоном, халвингами и динамической биржей BTC/USD.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
